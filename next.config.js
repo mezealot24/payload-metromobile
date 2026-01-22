@@ -6,6 +6,14 @@ const NEXT_PUBLIC_SERVER_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   : undefined || process.env.__NEXT_PRIVATE_ORIGIN || 'http://localhost:3000'
 
+const isDev = process.env.NODE_ENV !== 'production'
+const allowedDevOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://172.19.143.173:3000',
+  process.env.__NEXT_PRIVATE_ORIGIN,
+].filter(Boolean)
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -29,7 +37,8 @@ const nextConfig = {
 
     return webpackConfig
   },
-  reactStrictMode: true,
+  reactStrictMode: !isDev,
+  allowedDevOrigins,
   redirects,
 }
 

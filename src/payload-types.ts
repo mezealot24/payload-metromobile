@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
+    promotions: Promotion;
     media: Media;
     categories: Category;
     users: User;
@@ -91,6 +92,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    promotions: PromotionsSelect<false> | PromotionsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -112,10 +114,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    popupBanner: PopupBanner;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    popupBanner: PopupBannerSelect<false> | PopupBannerSelect<true>;
   };
   locale: null;
   user: User & {
@@ -781,6 +785,83 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "promotions".
+ */
+export interface Promotion {
+  id: number;
+  title: string;
+  campaignStatus: 'active' | 'upcoming' | 'expired';
+  /**
+   * Lower number = higher priority.
+   */
+  priority?: number | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  /**
+   * Optional. Match frontend model slug (e.g., sealion7).
+   */
+  modelSlug?: string | null;
+  heroMedia?: (number | null) | Media;
+  gallery?:
+    | {
+        image: number | Media;
+        alt?: string | null;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  benefits?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  conditions?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  tags?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -976,6 +1057,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'promotions';
+        value: number | Promotion;
       } | null)
     | ({
         relationTo: 'media';
@@ -1210,6 +1295,58 @@ export interface PostsSelect<T extends boolean = true> {
     | {
         id?: T;
         name?: T;
+      };
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "promotions_select".
+ */
+export interface PromotionsSelect<T extends boolean = true> {
+  title?: T;
+  campaignStatus?: T;
+  priority?: T;
+  startDate?: T;
+  endDate?: T;
+  modelSlug?: T;
+  heroMedia?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        alt?: T;
+        caption?: T;
+        id?: T;
+      };
+  benefits?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  conditions?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  tags?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  content?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
       };
   generateSlug?: T;
   slug?: T;
@@ -1689,6 +1826,31 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "popupBanner".
+ */
+export interface PopupBanner {
+  id: number;
+  enabled?: boolean | null;
+  titleTH?: string | null;
+  messageTH?: string | null;
+  ctaLabel?: string | null;
+  ctaHref?: string | null;
+  ctaNewTab?: boolean | null;
+  theme?: ('info' | 'promo' | 'urgent') | null;
+  startAt?: string | null;
+  endAt?: string | null;
+  media?: (number | null) | Media;
+  /**
+   * Optional. Use YouTube/Vimeo/Facebook URL.
+   */
+  videoUrl?: string | null;
+  targeting?: ('all' | 'home' | 'promotion' | 'models' | 'blog')[] | null;
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1735,6 +1897,28 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "popupBanner_select".
+ */
+export interface PopupBannerSelect<T extends boolean = true> {
+  enabled?: T;
+  titleTH?: T;
+  messageTH?: T;
+  ctaLabel?: T;
+  ctaHref?: T;
+  ctaNewTab?: T;
+  theme?: T;
+  startAt?: T;
+  endAt?: T;
+  media?: T;
+  videoUrl?: T;
+  targeting?: T;
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskSchedulePublish".
  */
 export interface TaskSchedulePublish {
@@ -1749,6 +1933,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'promotions';
+          value: number | Promotion;
         } | null);
     global?: string | null;
     user?: (number | null) | User;
