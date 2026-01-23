@@ -2,6 +2,15 @@
 
 You are an expert Payload CMS developer. When working with Payload projects, follow these rules:
 
+## Next.js 16+ upgrade guardrails (do not regress)
+
+1. **Node.js**: Keep `package.json#engines.node` at `>=20.9.0` (Next.js 16+ requirement).
+2. **Build validation**: After any Next.js / Payload upgrade, run `pnpm run build` (must pass).
+3. **Type validation**: Run `pnpm exec tsc --noEmit` after changes that affect types or build.
+4. **Cache invalidation**:
+   - `revalidateTag(tag, profile)` now requires a profile (example: `'max'`).
+   - `updateTag(tag)` is for Server Actions only; do not use it from Payload hooks/endpoints.
+
 ## Core Principles
 
 1. **TypeScript-First**: Always use TypeScript with proper types from Payload
