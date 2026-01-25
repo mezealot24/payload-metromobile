@@ -813,15 +813,72 @@ export interface Promotion {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Paste HTML from Rever (Inspect Element → Copy outerHTML of table). Best accuracy for table data.
+   */
+  benefitsHtml?: string | null;
+  /**
+   * Or paste plain text (1 line = 1 benefit). Auto-detects type from Thai keywords.
+   */
+  benefitsBulk?: string | null;
+  /**
+   * Paste conditions (1 line = 1 condition). Or leave empty if using HTML above (auto-extracted from sections 3 & 4).
+   */
+  conditionsBulk?: string | null;
+  /**
+   * Structured benefits - auto-populated from bulk paste or edit manually
+   */
   benefits?:
     | {
-        text: string;
+        type:
+          | 'early_price'
+          | 'financing'
+          | 'insurance_1y'
+          | 'warranty_powertrain'
+          | 'warranty_vehicle'
+          | 'battery_warranty'
+          | 'roadside_8y'
+          | 'accessories_bundle'
+          | 'accessory'
+          | 'freebie'
+          | 'cashback'
+          | 'discount'
+          | 'service'
+          | 'special'
+          | 'other';
+        /**
+         * Short title (auto-detected from table header)
+         */
+        title?: string | null;
+        /**
+         * Full description text
+         */
+        description: string;
+        /**
+         * Price/value (auto-extracted)
+         */
+        value?: string | null;
+        /**
+         * Emoji or icon name
+         */
+        icon?: string | null;
+        /**
+         * Sort order (lower = first)
+         */
+        sort?: number | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Campaign conditions - auto-populated from bulk paste or edit manually
+   */
   conditions?:
     | {
         text: string;
+        /**
+         * Sort order
+         */
+        sort?: number | null;
         id?: string | null;
       }[]
     | null;
@@ -1325,16 +1382,25 @@ export interface PromotionsSelect<T extends boolean = true> {
         caption?: T;
         id?: T;
       };
+  benefitsHtml?: T;
+  benefitsBulk?: T;
+  conditionsBulk?: T;
   benefits?:
     | T
     | {
-        text?: T;
+        type?: T;
+        title?: T;
+        description?: T;
+        value?: T;
+        icon?: T;
+        sort?: T;
         id?: T;
       };
   conditions?:
     | T
     | {
         text?: T;
+        sort?: T;
         id?: T;
       };
   tags?:

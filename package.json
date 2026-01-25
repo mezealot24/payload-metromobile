@@ -17,6 +17,8 @@
     "lint:fix": "cross-env NODE_OPTIONS=--no-deprecation next lint --fix",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
+    "seed:admin": "tsx scripts/seed-admin.ts",
+    "seed:globals": "tsx scripts/seed-globals.ts",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "pnpm run test:int && pnpm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" pnpm exec playwright test --config=playwright.config.ts",
@@ -46,7 +48,7 @@
     "geist": "^1.3.0",
     "graphql": "^16.8.2",
     "lucide-react": "^0.563.0",
-    "next": "16.1.1-canary.35",
+    "next": "16.2.0-canary.6",
     "next-sitemap": "^4.2.3",
     "payload": "3.73.0-canary.6",
     "prism-react-renderer": "^2.3.1",
@@ -70,7 +72,7 @@
     "autoprefixer": "^10.4.19",
     "copyfiles": "^2.4.1",
     "eslint": "^9.16.0",
-    "eslint-config-next": "16.1.1-canary.35",
+    "eslint-config-next": "16.2.0-canary.6",
     "jsdom": "26.1.0",
     "playwright": "1.56.1",
     "playwright-core": "1.56.1",
@@ -79,7 +81,8 @@
     "tailwindcss": "^3.4.3",
     "typescript": "5.7.3",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.3"
+    "vitest": "3.2.3",
+    "tsx": "^3.1.0"
   },
   "packageManager": "pnpm@10.27.0",
   "engines": {

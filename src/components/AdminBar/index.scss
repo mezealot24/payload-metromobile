@@ -1,7 +1,3 @@
-@import '~@payloadcms/ui/scss';
-
 .admin-bar {
-  @include small-break {
-    display: none;
-  }
+  // Responsive hiding handled by Tailwind classes in component (md:hidden)
 }
