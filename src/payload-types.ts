@@ -801,9 +801,9 @@ export interface Promotion {
   startDate?: string | null;
   endDate?: string | null;
   /**
-   * Optional. Match frontend model slug (e.g., sealion7).
+   * Optional. Match frontend model slug (prevents typos).
    */
-  modelSlug?: string | null;
+  modelSlug?: ('seal-5-dmi' | 'sealion7' | 'm6' | 'sealion-6-dmi' | 'atto3' | 'dolphin' | 'seal') | null;
   heroMedia?: (number | null) | Media;
   gallery?:
     | {

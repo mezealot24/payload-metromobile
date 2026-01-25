@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 
 import {
   BlocksFeature,
@@ -22,6 +22,93 @@ import {
   OverviewField,
   PreviewField,
 } from '@payloadcms/plugin-seo/fields'
+import { BYD_MODEL_OPTIONS } from '@/constants/bydModels'
+
+function formatMonthYearSlug(dateString?: string | null): string | null {
+  if (!dateString) return null
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return null
+  const month = date
+    .toLocaleString('en-US', { month: 'short' })
+    .toLowerCase()
+    .replace('.', '')
+  const year = date.getFullYear()
+  return `${month}-${year}`
+}
+
+async function ensureUniquePromotionSlug(args: {
+  candidate: string
+  id?: string | number | null
+  req: any
+}): Promise<string> {
+  const { candidate, id, req } = args
+  // Only do a lightweight existence check; append -2, -3 if needed.
+  const where: any = { slug: { equals: candidate } }
+  if (id) {
+    where.id = { not_equals: id }
+  }
+
+  const hit = await req.payload.find({
+    collection: 'promotions',
+    where,
+    limit: 1,
+    depth: 0,
+  })
+
+  if (!hit?.docs?.length) return candidate
+
+  // If taken, try suffixes. Keep it bounded.
+  for (let i = 2; i <= 9; i++) {
+    const next = `${candidate}-${i}`
+    const hit2 = await req.payload.find({
+      collection: 'promotions',
+      where: { slug: { equals: next } },
+      limit: 1,
+      depth: 0,
+    })
+    if (!hit2?.docs?.length) return next
+  }
+
+  // Worst case: timestamp fallback (still stable after first save)
+  return `${candidate}-${Date.now()}`
+}
+
+const autoTitleAndSlug: CollectionBeforeValidateHook = async ({ data, operation, req, originalDoc }) => {
+  // Only auto-fill on create/update when Title is missing/blank
+  if (!data || (operation !== 'create' && operation !== 'update')) return data
+
+  const currentTitle = typeof data.title === 'string' ? data.title.trim() : ''
+  const modelSlug = typeof data.modelSlug === 'string' ? data.modelSlug : null
+  const modelLabel = modelSlug
+    ? BYD_MODEL_OPTIONS.find((m) => m.value === modelSlug)?.label ?? modelSlug
+    : null
+
+  // 1) Title: keep short/admin-friendly (SEO title lives in meta.title)
+  if (currentTitle.length === 0) {
+    data.title = modelLabel ? `โปรโมชัน ${modelLabel}` : 'โปรโมชัน BYD Metromobile'
+  }
+
+  // 2) Slug: if user didn't set it yet, generate a stable one so publish won't regenerate it.
+  // Important: Payload's built-in slugField regenerates on publish if the slug was never overridden.
+  // By pre-filling slug once, slugField will keep it and disable future auto-generation.
+  const currentSlug = typeof (data as any).slug === 'string' ? (data as any).slug.trim() : ''
+  const originalSlug =
+    typeof (originalDoc as any)?.slug === 'string' ? String((originalDoc as any).slug).trim() : ''
+
+  if (currentSlug.length === 0 && originalSlug.length === 0) {
+    if (modelSlug) {
+      const monthYear = formatMonthYearSlug((data as any).startDate ?? (data as any).endDate ?? null)
+      const base = monthYear ? `${modelSlug}-${monthYear}` : modelSlug
+      ;(data as any).slug = await ensureUniquePromotionSlug({
+        candidate: base,
+        id: (originalDoc as any)?.id ?? null,
+        req,
+      })
+    }
+  }
+
+  return data
+}
 
 export const Promotions: CollectionConfig = {
   slug: 'promotions',
@@ -32,6 +119,7 @@ export const Promotions: CollectionConfig = {
     update: authenticated,
   },
   hooks: {
+    beforeValidate: [autoTitleAndSlug],
     beforeChange: [parseBulkFields],
     afterChange: [revalidatePromotion],
     afterDelete: [revalidateDelete],
@@ -74,9 +162,11 @@ export const Promotions: CollectionConfig = {
     },
     {
       name: 'modelSlug',
-      type: 'text',
+      type: 'select',
+      options: [...BYD_MODEL_OPTIONS],
       admin: {
-        description: 'Optional. Match frontend model slug (e.g., sealion7).',
+        description: 'Optional. Match frontend model slug (prevents typos).',
+        isClearable: true,
       },
     },
     {
@@ -302,7 +392,9 @@ export const Promotions: CollectionConfig = {
             MetaImageField({
               relationTo: 'media',
             }),
-            MetaDescriptionField({}),
+            MetaDescriptionField({
+              hasGenerateFn: true,
+            }),
             PreviewField({
               hasGenerateFn: true,
               titlePath: 'meta.title',
