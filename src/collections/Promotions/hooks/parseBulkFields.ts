@@ -3,8 +3,28 @@ import type { CollectionBeforeChangeHook } from 'payload'
 // ============================================================
 // TYPE DETECTION KEYWORDS (Thai patterns from Rever)
 // ============================================================
+
+// Exclusion patterns: ถ้ามีคำเหล่านี้ในข้อความ = ไม่ใช่ราคารถยนต์
+const PRICE_EXCLUSION_PATTERNS = [
+  /โฮมชาร์จเจอร์|Home\s*Charger|Charger/i,
+  /อุปกรณ์|Accessory|อุปกรณ์เสริม/i,
+  /ในราคา|ราคา.*บาท.*มูลค่า/i, // "ในราคา X บาท (มูลค่า Y บาท)" = ไม่ใช่ราคารถ
+  /ติดตั้ง|Installation/i,
+  /สายชาร์จ|Charging\s*Cable/i,
+]
+
+// Check if text contains exclusion patterns (not a car price)
+function isNotCarPrice(text: string): boolean {
+  return PRICE_EXCLUSION_PATTERNS.some((pattern) => pattern.test(text))
+}
+
 const TYPE_KEYWORDS: Array<{ pattern: RegExp; type: string }> = [
-  { pattern: /ราคา(จำหน่าย|พิเศษ)?/i, type: 'early_price' },
+  // Early Price: ต้องเป็น "ราคาจำหน่าย" หรือ "ราคาพิเศษ" หรือ "ราคา" ที่มีบริบทของรถยนต์
+  // Pattern จะ match ทั้ง title และ description
+  {
+    pattern: /(ราคา(จำหน่าย|พิเศษ|เริ่มต้น)|ราคา.*(รถ|รุ่น|BYD|เริ่มต้น))/i,
+    type: 'early_price',
+  },
   { pattern: /ดาวน์|ดอกเบี้ย|ผ่อน|สินเชื่อ/i, type: 'financing' },
   { pattern: /ประกันภัย|พ\.ร\.บ\./i, type: 'insurance_1y' },
   { pattern: /รับประกันระบบขับเคลื่อน/i, type: 'warranty_powertrain' },
@@ -17,10 +37,31 @@ const TYPE_KEYWORDS: Array<{ pattern: RegExp; type: string }> = [
   { pattern: /ค่าจดทะเบียน/i, type: 'freebie' },
 ]
 
-function detectBenefitType(text: string): string {
-  for (const { pattern, type } of TYPE_KEYWORDS) {
-    if (pattern.test(text)) return type
+function detectBenefitType(text: string, title?: string): string {
+  const combinedText = title ? `${title} ${text}` : text
+
+  // Check exclusion patterns FIRST - ถ้ามี exclusion = ไม่ใช่ราคารถยนต์แน่นอน
+  if (isNotCarPrice(combinedText)) {
+    // Skip early_price detection, check other patterns instead
+    for (let i = 1; i < TYPE_KEYWORDS.length; i++) {
+      const { pattern, type } = TYPE_KEYWORDS[i]
+      if (pattern.test(combinedText)) return type
+    }
+    return 'freebie' // default if no other pattern matches
   }
+
+  // Check for early_price (only if no exclusion patterns)
+  const earlyPricePattern = TYPE_KEYWORDS[0].pattern
+  if (earlyPricePattern.test(combinedText)) {
+    return 'early_price'
+  }
+
+  // Check other patterns
+  for (let i = 1; i < TYPE_KEYWORDS.length; i++) {
+    const { pattern, type } = TYPE_KEYWORDS[i]
+    if (pattern.test(combinedText)) return type
+  }
+
   return 'freebie' // default
 }
 
@@ -96,8 +137,11 @@ function parseHtmlBenefits(html: string): Array<{
       if (title === 'ราคาจำหน่าย' && !/\d/.test(description)) continue
       if (title === 'สิทธิประโยชน์พิเศษ' && !description) continue
 
+      // Detect type with both title and description context
+      const detectedType = detectBenefitType(description, title)
+
       benefits.push({
-        type: detectBenefitType(title),
+        type: detectedType,
         title,
         description,
         value: extractValue(description) || extractValue(title),
