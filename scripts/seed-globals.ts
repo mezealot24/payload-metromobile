@@ -65,7 +65,7 @@ async function run() {
         newTab: false,
       },
     },
-  ]
+  ] as const
 
   // Footer navigation items
   const footerNavItems = [
@@ -93,14 +93,14 @@ async function run() {
         newTab: false,
       },
     },
-  ]
+  ] as const
 
   try {
     // Update Header global
     await payload.updateGlobal({
       slug: 'header',
       data: {
-        navItems: headerNavItems,
+        navItems: headerNavItems as any,
       },
       context: {
         disableRevalidate: true, // Disable revalidation during seed
@@ -112,7 +112,7 @@ async function run() {
     await payload.updateGlobal({
       slug: 'footer',
       data: {
-        navItems: footerNavItems,
+        navItems: footerNavItems as any,
       },
       context: {
         disableRevalidate: true, // Disable revalidation during seed

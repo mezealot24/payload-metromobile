@@ -16,6 +16,23 @@
 import { getPayload } from 'payload'
 import config from '../src/payload.config'
 
+type BenefitType =
+  | 'early_price'
+  | 'financing'
+  | 'insurance_1y'
+  | 'warranty_powertrain'
+  | 'warranty_vehicle'
+  | 'battery_warranty'
+  | 'roadside_8y'
+  | 'accessories_bundle'
+  | 'accessory'
+  | 'freebie'
+  | 'cashback'
+  | 'discount'
+  | 'service'
+  | 'special'
+  | 'other'
+
 interface LegacyBenefit {
   text?: string
   description?: string
@@ -44,14 +61,35 @@ async function migrate() {
 
   let migratedCount = 0
 
+  // Helper to safely convert benefit type
+  const normalizeBenefitType = (type?: string): BenefitType => {
+    if (!type) return 'other'
+    const validTypes: BenefitType[] = [
+      'early_price',
+      'financing',
+      'insurance_1y',
+      'warranty_powertrain',
+      'warranty_vehicle',
+      'battery_warranty',
+      'roadside_8y',
+      'accessories_bundle',
+      'accessory',
+      'freebie',
+      'cashback',
+      'discount',
+      'service',
+      'special',
+      'other',
+    ]
+    return validTypes.includes(type as BenefitType) ? (type as BenefitType) : 'other'
+  }
+
   for (const doc of docs) {
     const benefits = (doc.benefits ?? []) as LegacyBenefit[]
     const conditions = (doc.conditions ?? []) as LegacyCondition[]
 
     // Check if benefits need migration (has 'text' but no 'description')
-    const benefitsNeedMigration = benefits.some(
-      (b) => 'text' in b && b.text && !b.description,
-    )
+    const benefitsNeedMigration = benefits.some((b) => 'text' in b && b.text && !b.description)
 
     // Check if conditions need sort field
     const conditionsNeedMigration = conditions.some((c) => c.sort === undefined)
@@ -63,7 +101,7 @@ async function migrate() {
 
     // Migrate benefits
     const updatedBenefits = benefits.map((b, i) => ({
-      type: b.type ?? 'other',
+      type: normalizeBenefitType(b.type),
       description: b.description ?? b.text ?? '',
       value: b.value,
       sort: b.sort ?? i + 1,
