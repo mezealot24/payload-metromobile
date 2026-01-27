@@ -328,6 +328,15 @@ export const Promotions: CollectionConfig = {
               },
             },
             {
+              name: 'variantName',
+              type: 'text',
+              admin: {
+                description: 'Variant name (e.g., "Standard Range", "Extended Range")',
+                width: '33%',
+                condition: (data) => data.type === 'early_price',
+              },
+            },
+            {
               name: 'icon',
               type: 'text',
               admin: {

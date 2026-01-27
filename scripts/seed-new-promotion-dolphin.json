@@ -1,27 +1,35 @@
 {
-  "title": "BYD ATTO 3 MY24",
-  "subtitle": "849,900 บาท + ดอกเบี้ย 1.88%",
-  "description": "แคมเปญ 22-31 ม.ค. 69 | Extended Range Local Production",
+  "title": "BYD DOLPHIN",
+  "subtitle": "เริ่ม 599,900 บาท + ดอกเบี้ย 1.88%",
+  "description": "แคมเปญ 22-31 ม.ค. 69 | Local Production",
   "campaignStatus": "active",
   "priority": 1,
   "startDate": "2026-01-22T00:00:00.000Z",
   "endDate": "2026-01-31T23:59:59.999Z",
-  "modelSlug": "atto3",
+  "modelSlug": "dolphin",
 
   "variants": [
     {
+      "variantId": "standard-range",
+      "name": "Standard Range",
+      "price": 599900,
+      "originalPrice": 699900,
+      "downPayment": 29995,
+      "interestRate": 1.88
+    },
+    {
       "variantId": "extended-range",
       "name": "Extended Range",
-      "price": 849900,
-      "originalPrice": 999900,
-      "downPayment": 42495,
+      "price": 719900,
+      "originalPrice": 819900,
+      "downPayment": 35995,
       "interestRate": 1.88
     }
   ],
 
   "benefits": [
-    { "icon": "price", "text": "ราคา 849,900 บาท", "highlight": true },
-    { "icon": "finance", "text": "ดาวน์เริ่ม 42,495 บาท หรือ ดอกเบี้ย 1.88%" },
+    { "icon": "price", "text": "Standard 599,900 / Extended 719,900", "highlight": true },
+    { "icon": "finance", "text": "ดาวน์เริ่ม 29,995 บาท หรือ ดอกเบี้ย 1.88%" },
     { "icon": "charger", "text": "โฮมชาร์จเจอร์ ZHIDA 10,000 บาท (ปกติ 25,000)" },
     { "icon": "insurance", "text": "ประกันชั้น 1 + พ.ร.บ. 1 ปี" },
     { "icon": "warranty", "text": "รับประกัน 8 ปี / 160,000 กม." },
@@ -39,16 +47,16 @@
 
   "tags": [
     { "text": "BYD" },
-    { "text": "ATTO 3" },
-    { "text": "849,900" },
+    { "text": "DOLPHIN" },
+    { "text": "599,900" },
     { "text": "EV" }
   ],
 
   "meta": {
-    "title": "BYD ATTO 3 MY24 ราคา 849,900 บาท | Metromobile",
-    "description": "ATTO 3 Extended 849,900 บาท ดอกเบี้ย 1.88% ดาวน์ 42,495 บาท 22-31 ม.ค. 69"
+    "title": "BYD DOLPHIN ราคา 599,900-719,900 บาท | Metromobile",
+    "description": "DOLPHIN 599,900-719,900 บาท ดอกเบี้ย 1.88% 22-31 ม.ค. 69"
   },
 
-  "slug": "byd-atto3-jan2026",
+  "slug": "byd-dolphin-jan2026",
   "_status": "published"
 }

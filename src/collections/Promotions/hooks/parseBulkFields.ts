@@ -101,12 +101,14 @@ function parseHtmlBenefits(html: string): Array<{
   title: string
   description: string
   value?: string
+  variantName?: string
 }> {
   const benefits: Array<{
     type: string
     title: string
     description: string
     value?: string
+    variantName?: string
   }> = []
 
   // Match table rows: <tr>...<td>TITLE</td><td>DESCRIPTION</td>...</tr>
@@ -139,12 +141,14 @@ function parseHtmlBenefits(html: string): Array<{
 
       // Detect type with both title and description context
       const detectedType = detectBenefitType(description, title)
+      const variantName = detectedType === 'early_price' ? extractVariantName(description) : undefined
 
       benefits.push({
         type: detectedType,
         title,
         description,
         value: extractValue(description) || extractValue(title),
+        variantName,
       })
     }
   }
@@ -177,20 +181,45 @@ function parseHtmlConditions(html: string): string[] {
 // ============================================================
 const BULLET_REGEX = /^[\s]*[-•–—·]\s*|^[\s]*\d+[.)\\]]\s*/
 
+function extractVariantName(text: string): string | undefined {
+  // Extract variant name from patterns like:
+  // "Standard Range", "Extended Range", "Premium", "AWD Performance"
+  const variantPatterns = [
+    /(Standard\s*Range|Extended\s*Range|Premium|AWD\s*Performance|Base|Luxury|Sport)/i,
+    /รุ่น\s*(Standard\s*Range|Extended\s*Range|Premium|AWD\s*Performance)/i,
+  ]
+  
+  for (const pattern of variantPatterns) {
+    const match = text.match(pattern)
+    if (match) {
+      return match[1]
+    }
+  }
+  
+  return undefined
+}
+
 function parsePlainTextBenefits(text: string): Array<{
   type: string
   description: string
   value?: string
+  variantName?: string
 }> {
   return text
     .split('\n')
     .map((line) => line.replace(BULLET_REGEX, '').trim())
     .filter((line) => line.length > 10)
-    .map((line) => ({
-      type: detectBenefitType(line),
-      description: line,
-      value: extractValue(line),
-    }))
+    .map((line) => {
+      const type = detectBenefitType(line)
+      const variantName = type === 'early_price' ? extractVariantName(line) : undefined
+      
+      return {
+        type,
+        description: line,
+        value: extractValue(line),
+        variantName,
+      }
+    })
 }
 
 function parsePlainTextConditions(text: string): string[] {
@@ -237,6 +266,7 @@ export const parseBulkFields: CollectionBeforeChangeHook = ({ data, req }) => {
 
     newBenefits = parsed.map((b, i) => ({
       ...b,
+      variantName: 'variantName' in b ? (b.variantName as string) : undefined,
       sort: existingBenefits.length + i + 1,
     }))
 
@@ -265,6 +295,7 @@ export const parseBulkFields: CollectionBeforeChangeHook = ({ data, req }) => {
       title: 'title' in b ? (b.title as string) : undefined,
       description: b.description,
       value: b.value,
+      variantName: 'variantName' in b ? (b.variantName as string) : undefined,
       sort: currentBenefitsCount + i + 1,
     }))
 
