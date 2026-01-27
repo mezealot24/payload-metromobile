@@ -301,6 +301,15 @@ export const Promotions: CollectionConfig = {
             rows: 4,
           },
         },
+        {
+          name: 'benefitsJson',
+          type: 'textarea',
+          admin: {
+            description:
+              'Or paste JSON array directly. Auto-parses into benefits array on save. Copy from API response or generated JSON.',
+            rows: 8,
+          },
+        },
       ],
     },
     // ========================================

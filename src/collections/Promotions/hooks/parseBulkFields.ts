@@ -324,6 +324,38 @@ export const parseBulkFields: CollectionBeforeChangeHook = ({ data, req }) => {
     )
   }
 
+  // Parse benefitsJson (JSON array from API)
+  if (data.benefitsJson?.trim()) {
+    try {
+      const jsonText = data.benefitsJson as string
+      const parsed = JSON.parse(jsonText)
+
+      // Handle both single object and array of objects
+      const benefitsArray = Array.isArray(parsed) ? parsed : [parsed]
+      const currentBenefitsCount = existingBenefits.length + newBenefits.length
+
+      const jsonBenefits = benefitsArray.map((b: any, i: number) => ({
+        type: b.type || 'freebie',
+        title: b.title,
+        description: b.description,
+        value: b.value,
+        variantName: b.variantName,
+        icon: b.icon,
+        sort: b.sort !== undefined ? b.sort : currentBenefitsCount + i + 1,
+      }))
+
+      newBenefits = [...newBenefits, ...jsonBenefits]
+
+      req.payload.logger.info(
+        `[parseBulkFields] Parsed ${jsonBenefits.length} benefits from JSON`,
+      )
+    } catch (error) {
+      req.payload.logger.error(
+        `[parseBulkFields] Failed to parse benefitsJson: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      )
+    }
+  }
+
   // Merge with existing data
   if (newBenefits.length > 0) {
     data.benefits = [...existingBenefits, ...newBenefits]
@@ -337,6 +369,7 @@ export const parseBulkFields: CollectionBeforeChangeHook = ({ data, req }) => {
   data.benefitsHtml = undefined
   data.benefitsBulk = undefined
   data.conditionsBulk = undefined
+  data.benefitsJson = undefined
 
   return data
 }
