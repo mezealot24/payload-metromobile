@@ -218,7 +218,7 @@ export const parseBulkFields: CollectionBeforeChangeHook = ({ data, req }) => {
     const currentBenefitsCount = existingBenefits.length + newBenefits.length
     const additionalBenefits = parsed.map((b, i) => ({
       type: b.type,
-      title: 'title' in b ? b.title : undefined,
+      title: 'title' in b ? (b.title as string) : undefined,
       description: b.description,
       value: b.value,
       sort: currentBenefitsCount + i + 1,
