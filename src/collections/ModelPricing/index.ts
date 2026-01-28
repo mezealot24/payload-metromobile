@@ -3,6 +3,10 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
 import { BYD_MODEL_OPTIONS } from '@/constants/bydModels'
+import {
+  revalidateModelPricing,
+  revalidateDelete,
+} from './hooks/revalidateModelPricing'
 
 export const ModelPricing: CollectionConfig = {
   slug: 'model-pricing',
@@ -11,6 +15,10 @@ export const ModelPricing: CollectionConfig = {
     create: authenticated,
     update: authenticated,
     delete: authenticated,
+  },
+  hooks: {
+    afterChange: [revalidateModelPricing],
+    afterDelete: [revalidateDelete],
   },
   admin: {
     useAsTitle: 'modelSlug',

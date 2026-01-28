@@ -129,6 +129,80 @@ const page = await payload.findByID({
 })
 ```
 
+## Pricing Collections (แยกราคาออกจาก Promotion)
+
+**Rule:** อย่า hardcode ราคาใน frontend. ราคา “มาตรฐาน” ต้องอยู่ใน CMS และ Promotion ใช้ “override ราคาเฉพาะแคมเปญ” เท่านั้น
+
+### Recommended Structure
+
+1) **models** (ข้อมูลรุ่นรถหลัก)
+2) **model-pricing** (ราคามาตรฐาน + รุ่นย่อย)
+3) **promotions** (ราคาโปร/override + benefits/conditions)
+
+### Model Pricing Collection (example)
+
+```typescript
+import type { CollectionConfig } from 'payload'
+
+export const ModelPricing: CollectionConfig = {
+  slug: 'model-pricing',
+  admin: {
+    useAsTitle: 'modelSlug',
+    defaultColumns: ['modelSlug', 'currency', 'effectiveDate', 'updatedAt'],
+  },
+  access: {
+    read: () => true,
+    update: ({ req: { user } }) => user?.roles?.includes('admin'),
+    create: ({ req: { user } }) => user?.roles?.includes('admin'),
+    delete: ({ req: { user } }) => user?.roles?.includes('admin'),
+  },
+  fields: [
+    { name: 'modelSlug', type: 'text', required: true, index: true },
+    {
+      name: 'currency',
+      type: 'select',
+      required: true,
+      options: ['THB'],
+      defaultValue: 'THB',
+    },
+    { name: 'basePrice', type: 'number', required: true, min: 0 },
+    {
+      name: 'variants',
+      type: 'array',
+      minRows: 1,
+      fields: [
+        { name: 'variantId', type: 'text', required: true },
+        { name: 'name', type: 'text', required: true },
+        { name: 'price', type: 'number', required: true, min: 0 },
+        { name: 'originalPrice', type: 'number', min: 0 },
+      ],
+    },
+    { name: 'region', type: 'text' },
+    { name: 'effectiveDate', type: 'date', required: true },
+    { name: 'notes', type: 'textarea' },
+  ],
+}
+```
+
+### Promotion Override Pattern (example)
+
+```typescript
+// In promotions collection
+{
+  name: 'pricingOverrides',
+  type: 'array',
+  fields: [
+    { name: 'variantId', type: 'text', required: true },
+    { name: 'promoPrice', type: 'number', required: true, min: 0 },
+    { name: 'originalPrice', type: 'number', min: 0 },
+    { name: 'downPayment', type: 'number', min: 0 },
+    { name: 'interestRate', type: 'number', min: 0 },
+  ],
+}
+```
+
+**UI rule:** หน้า Promotion ต้องแสดง `pricingOverrides` ถ้ามี ไม่งั้น fallback ไปที่ `model-pricing` ตาม `modelSlug`
+
 ## Globals
 
 Globals are single-instance documents (not collections).
