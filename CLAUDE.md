@@ -311,13 +311,42 @@ curl -X POST https://bydmetromobile.com/api/revalidate/promotion \
 - **Expected**: Popup shows → slides change every 5 seconds
 - **Files**: `components/PopupCarousel.tsx` (already updated)
 
-#### 2️⃣ Payload CMS: Review ModelPricing Integration (If Needed)
-- **Repo**: `payload-metromobile`
-- **What**: Check if ModelPricing collection updates are needed for any feature flags
-- **Files**: `src/collections/ModelPricing/index.ts` (referenced in IDE)
-- **Status**: ⏸️ **Optional** - only if new pricing tiers were discussed
+#### 2️⃣ Standardize Promotion JSON Schema for AI Consistency
+- **Repo**: Both repos (`byd-metromobile` + `payload-metromobile`)
+- **Why**: Ensure tutka & other AI agents generate consistent promotion structures
+- **Steps**:
+  1. **Create JSON Schema file**: `docs/PROMOTION_JSON_SCHEMA.md`
+     - Define `StaticPromotion` interface standards
+     - Define `PromotionBenefit` benefit types
+     - Show required vs optional fields
+     - Include examples for each benefit type
+  2. **Create promotion generator template**: `docs/PROMOTION_GENERATOR_TEMPLATE.ts`
+     - Provide copy-paste template for new promotions
+     - Pre-filled common benefits (WARRANTY, INSURANCE, etc.)
+     - Clear comments for AI guidance
+  3. **Update frontend type definitions** (if needed):
+     - Verify `types/promotion/index.ts` covers all Payload CMS fields
+     - Add JSDoc comments for each field (helps AI understand purpose)
+  4. **Update Payload CMS collection** (if needed):
+     - Add field descriptions/hints in `src/collections/Promotions/index.ts`
+     - Ensure all fields map to `StaticPromotion` interface
+  5. **Document in both repos**:
+     - Add section to `payload-metromobile/CLAUDE.md` → "Promotion JSON Standards"
+     - Add section to `byd-metromobile/CLAUDE.md` → "Generating Promotions"
+- **Files to create/update**:
+  - `docs/PROMOTION_JSON_SCHEMA.md` (NEW)
+  - `docs/PROMOTION_GENERATOR_TEMPLATE.ts` (NEW)
+  - `src/types/promotion/index.ts` (add JSDoc comments)
+  - Both repos `CLAUDE.md` (document standards)
+- **Status**: 🔥 **HIGH PRIORITY** - enables consistent AI generation
 
-#### 3️⃣ Frontend: Adjust Auto-slide Interval (Optional)
+#### 3️⃣ Payload CMS: Review ModelPricing Integration (Optional)
+- **Repo**: `payload-metromobile`
+- **What**: Check if ModelPricing collection updates are needed
+- **Files**: `src/collections/ModelPricing/index.ts` (referenced in IDE)
+- **Status**: ⏸️ **Optional** - only if new pricing tiers discussed
+
+#### 4️⃣ Frontend: Adjust Auto-slide Interval (Optional)
 - **If**: 5 seconds is too fast/slow for users
 - **Edit**: `components/PopupCarousel.tsx` line 242 → change `5000` to desired ms
 - **Examples**:
@@ -325,12 +354,12 @@ curl -X POST https://bydmetromobile.com/api/revalidate/promotion \
   - `8000` = 8 seconds (slower)
   - `10000` = 10 seconds (very slow)
 
-#### 4️⃣ Add Analytics Tracking (Optional Enhancement)
+#### 5️⃣ Add Analytics Tracking (Optional Enhancement)
 - **What**: Track when users manually navigate vs auto-slide
 - **Where**: `components/PopupCarousel.tsx` → hooks for `scrollNext/scrollPrev`
 - **Benefit**: Understand if 5-second interval is optimal
 
-#### 5️⃣ Deploy & Monitor
+#### 6️⃣ Deploy & Monitor
 - **Frontend**: Push changes to `staging` → test → merge to `main`
 - **Monitoring**: Check browser console (logs for any interval cleanup issues)
 - **CMS**: No changes needed unless you adjust the interval config in Payload
